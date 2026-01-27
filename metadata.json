@@ -1,0 +1,7 @@
+{
+  "name": "Stumarto - School Marketplace",
+  "description": "A comprehensive marketplace for new and pre-owned school supplies including uniforms, books, and stationery with both direct-sell and platform-checkout options.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
