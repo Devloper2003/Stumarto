@@ -1,5 +1,6 @@
 
 import React from 'react';
+import API_BASE from '../services/api';
 import { Product } from '../types';
 import { useEffect, useState } from 'react';
 
@@ -46,7 +47,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
 
   const fetchUsers = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/users', {
+      const res = await fetch(`${API_BASE}/admin/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -58,7 +59,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
 
   const fetchReviews = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/reviews', {
+      const res = await fetch(`${API_BASE}/admin/reviews`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -70,7 +71,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
 
   const fetchBankDetails = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/bank-details', {
+      const res = await fetch(`${API_BASE}/admin/bank-details`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -82,7 +83,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
 
   const fetchCoupons = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/coupons', {
+      const res = await fetch(`${API_BASE}/admin/coupons`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -94,7 +95,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
 
   const fetchBlogs = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/admin/blogs', {
+      const res = await fetch(`${API_BASE}/admin/blogs`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();

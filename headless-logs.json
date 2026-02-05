@@ -1,11 +1,100 @@
 [
   {
+    "type": "response",
+    "url": "https://stumarto-web-production.up.railway.app/",
+    "status": 200
+  },
+  {
+    "type": "response",
+    "url": "https://cdn.tailwindcss.com/",
+    "status": 302
+  },
+  {
+    "type": "response",
+    "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+    "status": 200
+  },
+  {
+    "type": "response",
+    "url": "https://cdn.tailwindcss.com/3.4.17",
+    "status": 200
+  },
+  {
+    "type": "console",
+    "level": "warning",
+    "text": "cdn.tailwindcss.com should not be used in production. To use Tailwind CSS in production, install it as a PostCSS plugin or use the Tailwind CLI: https://tailwindcss.com/docs/installation",
+    "location": {
+      "url": "https://cdn.tailwindcss.com/",
+      "lineNumber": 63,
+      "columnNumber": 1710
+    }
+  },
+  {
+    "type": "response",
+    "url": "https://stumarto-web-production.up.railway.app/index.css",
+    "status": 200
+  },
+  {
+    "type": "response",
+    "url": "https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js",
+    "status": 200
+  },
+  {
+    "type": "response",
+    "url": "https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js",
+    "status": 200
+  },
+  {
+    "type": "response",
+    "url": "https://stumarto-web-production.up.railway.app/logo.svg",
+    "status": 200
+  },
+  {
+    "type": "response",
+    "url": "https://i.ibb.co/LdQ8vJ9/Stumarto-Logo.jpg",
+    "status": 404
+  },
+  {
+    "type": "console",
+    "level": "error",
+    "text": "Failed to load resource: the server responded with a status of 404 ()",
+    "location": {
+      "url": "https://i.ibb.co/LdQ8vJ9/Stumarto-Logo.jpg",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
     "type": "requestfailed",
-    "url": "http://localhost:5173/",
+    "url": "http://localhost:5000/api/auth/login",
     "failure": "net::ERR_CONNECTION_REFUSED"
   },
   {
-    "type": "goto-error",
-    "message": "page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:5173/\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"networkidle\"\u001b[22m\n"
+    "type": "console",
+    "level": "error",
+    "text": "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "location": {
+      "url": "http://localhost:5000/api/auth/login",
+      "lineNumber": 0,
+      "columnNumber": 0
+    }
+  },
+  {
+    "type": "console",
+    "level": "error",
+    "text": "Login error: TypeError: Failed to fetch\n    at Object.<anonymous> (https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:57428)\n    at Generator.next (<anonymous>)\n    at https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:634\n    at new Promise (<anonymous>)\n    at d (https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:454)\n    at onSubmit (https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:57370)\n    at Object.Et (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:16597)\n    at Lt (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:16751)\n    at https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:36632\n    at _a (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:36726)",
+    "location": {
+      "url": "https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js",
+      "lineNumber": 0,
+      "columnNumber": 57839
+    }
+  },
+  {
+    "type": "dialog",
+    "message": "Unable to login. Please try again later."
+  },
+  {
+    "type": "screenshot-error",
+    "message": "page.screenshot: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n"
   }
 ]

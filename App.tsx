@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import API_BASE from './services/api';
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Product, User, CartItem, ProductType, Order } from './types';
 import { DUMMY_PRODUCTS } from './mockData';
@@ -29,7 +30,7 @@ const App: React.FC = () => {
       // try to refresh profile from backend
       (async () => {
         try {
-          const res = await fetch('http://localhost:5000/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+          const res = await fetch(`${API_BASE}/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
           const data = await res.json();
           if (res.ok && data.data && data.data.user) {
             setUser(data.data.user);
