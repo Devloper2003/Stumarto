@@ -24,8 +24,7 @@ export default defineConfig(({ mode }) => {
         rollupOptions: {
           output: {
             manualChunks: {
-              'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-              'ui': ['./App.tsx', './pages/Home.tsx', './pages/Marketplace.tsx']
+              'react-vendor': ['react', 'react-dom', 'react-router-dom']
             }
           }
         },
@@ -34,7 +33,7 @@ export default defineConfig(({ mode }) => {
         // Production optimizations
         minify: 'terser',
         sourcemap: false,
-        target: 'es2020'
+        target: 'es2015'
       }
     };
 });
