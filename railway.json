@@ -1,0 +1,15 @@
+{
+  "builder": "dockerfile",
+  "variables": {
+    "PORT": "5000",
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "."
+  },
+  "deploy": {
+    "startCommand": "npm start",
+    "restartPolicyMaxRetries": 3
+  }
+}
