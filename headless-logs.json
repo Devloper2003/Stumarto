@@ -6,13 +6,18 @@
   },
   {
     "type": "response",
-    "url": "https://cdn.tailwindcss.com/",
-    "status": 302
+    "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+    "status": 200
   },
   {
     "type": "response",
-    "url": "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap",
+    "url": "https://stumarto-web-production.up.railway.app/index.css",
     "status": 200
+  },
+  {
+    "type": "response",
+    "url": "https://cdn.tailwindcss.com/",
+    "status": 302
   },
   {
     "type": "response",
@@ -31,12 +36,7 @@
   },
   {
     "type": "response",
-    "url": "https://stumarto-web-production.up.railway.app/index.css",
-    "status": 200
-  },
-  {
-    "type": "response",
-    "url": "https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js",
+    "url": "https://stumarto-web-production.up.railway.app/assets/index-FoQNX5yg.js",
     "status": 200
   },
   {
@@ -82,11 +82,11 @@
   {
     "type": "console",
     "level": "error",
-    "text": "Login error: TypeError: Failed to fetch\n    at Object.<anonymous> (https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:57428)\n    at Generator.next (<anonymous>)\n    at https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:634\n    at new Promise (<anonymous>)\n    at d (https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:454)\n    at onSubmit (https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js:1:57370)\n    at Object.Et (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:16597)\n    at Lt (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:16751)\n    at https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:36632\n    at _a (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:36726)",
+    "text": "Login error: TypeError: Failed to fetch\n    at Object.<anonymous> (https://stumarto-web-production.up.railway.app/assets/index-FoQNX5yg.js:1:57464)\n    at Generator.next (<anonymous>)\n    at https://stumarto-web-production.up.railway.app/assets/index-FoQNX5yg.js:1:634\n    at new Promise (<anonymous>)\n    at d (https://stumarto-web-production.up.railway.app/assets/index-FoQNX5yg.js:1:454)\n    at onSubmit (https://stumarto-web-production.up.railway.app/assets/index-FoQNX5yg.js:1:57406)\n    at Object.Et (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:16597)\n    at Lt (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:16751)\n    at https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:36632\n    at _a (https://stumarto-web-production.up.railway.app/assets/react-vendor-BzqnhsA9.js:20:36726)",
     "location": {
-      "url": "https://stumarto-web-production.up.railway.app/assets/index-DTu0EyIn.js",
+      "url": "https://stumarto-web-production.up.railway.app/assets/index-FoQNX5yg.js",
       "lineNumber": 0,
-      "columnNumber": 57839
+      "columnNumber": 57854
     }
   },
   {

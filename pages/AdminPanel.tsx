@@ -107,7 +107,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
 
   const callApprove = async (id: string) => {
     try {
-      if (token) await fetch(`http://localhost:5000/api/products/${id}/approve`, {
+      if (token) await fetch(`${API_BASE}/products/${id}/approve`, {
         method: 'PATCH',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -115,12 +115,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
     } catch (err) {
       console.error('Approve error', err);
     }
-  };
+  }; 
 
   const callDelete = async (id: string) => {
     if (!confirm('Delete permanently?')) return;
     try {
-      if (token) await fetch(`http://localhost:5000/api/products/${id}`, {
+      if (token) await fetch(`${API_BASE}/products/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -128,14 +128,14 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ products, onApprove, onDelete, 
     } catch (err) {
       console.error('Delete error', err);
     }
-  };
+  }; 
 
   const callEdit = async (p: Product) => {
     const name = prompt('Edit title', p.name) || p.name;
     const price = Number(prompt('Edit price', String(p.price))) || p.price;
     try {
       if (token) {
-        await fetch(`http://localhost:5000/api/products/${p.id}`, {
+        await fetch(`${API_BASE}/products/${p.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
           body: JSON.stringify({ title: name, price })
