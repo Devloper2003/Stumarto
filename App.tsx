@@ -4,6 +4,8 @@ import API_BASE from './services/api';
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Product, User, CartItem, ProductType, Order } from './types';
 import { DUMMY_PRODUCTS } from './mockData';
+import { useServiceWorker } from './src/hooks/useServiceWorker';
+import DeviceCompatibilityInfo from './src/components/DeviceCompatibilityInfo';
 import Home from './pages/Home';
 import Marketplace from './pages/Marketplace';
 import ProductDetail from './pages/ProductDetail';
@@ -22,6 +24,9 @@ const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(DUMMY_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [locationFilter, setLocationFilter] = useState<string>('All Locations');
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+
+  useServiceWorker();
 
   useEffect(() => {
     const token = localStorage.getItem('stumarto_token');
@@ -93,13 +98,24 @@ const App: React.FC = () => {
       <div className="min-h-screen flex flex-col font-sans">
         <header className="bg-white sticky top-0 z-50 py-4">
           <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3">
               <img src="/logo.svg" alt="Stumarto" className="w-9 h-9" />
               <span className="text-[22px] font-black text-[#1e293b] tracking-[-0.03em] uppercase">Stumarto</span>
             </Link>
 
-            {/* Navigation - Matches Image 2 Typography */}
-            <nav className="flex items-center gap-10">
+            {/* Mobile toggle */}
+            <div className="md:hidden flex items-center gap-3">
+              <button aria-label="Open menu" onClick={() => setMobileOpen(v => !v)} className="p-2 rounded-md hover:bg-gray-100">
+                {mobileOpen ? (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                ) : (
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                )}
+              </button>
+            </div>
+
+            {/* Desktop nav */}
+            <nav className="hidden md:flex items-center gap-10">
               <Link to="/marketplace" className="text-[11px] font-black uppercase tracking-[0.05em] text-[#64748b] hover:text-[#16a34a] transition-colors">Marketplace</Link>
               <Link to="/reviews" className="text-[11px] font-black uppercase tracking-[0.05em] text-[#64748b] hover:text-[#16a34a] transition-colors">Community</Link>
               
@@ -125,6 +141,30 @@ const App: React.FC = () => {
               )}
             </nav>
           </div>
+
+          {/* Mobile menu panel */}
+          {mobileOpen && (
+            <div className="mobile-nav-panel md:hidden">
+              <div className="container mobile-nav-links">
+                <div className="pt-4 pb-4">
+                  <Link to="/marketplace" onClick={() => setMobileOpen(false)} className="text-sm font-bold">Marketplace</Link>
+                </div>
+                <div>
+                  <Link to="/reviews" onClick={() => setMobileOpen(false)} className="text-sm font-bold">Community</Link>
+                </div>
+                <div>
+                  <Link to="/cart" onClick={() => setMobileOpen(false)} className="text-sm font-bold">Cart</Link>
+                </div>
+                <div className="pt-2 pb-6">
+                  {user ? (
+                    <Link to="/profile" onClick={() => setMobileOpen(false)} className="text-sm font-bold">Profile</Link>
+                  ) : (
+                    <Link to="/login" onClick={() => setMobileOpen(false)} className="text-sm font-bold">Login</Link>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </header>
 
         <main className="flex-1 bg-gray-50/50">

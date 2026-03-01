@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, BankDetails } from '../types';
+import { User } from '../types';
+import API_BASE from '../services/api';
 
 interface SignupProps {
   setUser: (u: User) => void;
@@ -9,45 +10,68 @@ interface SignupProps {
 
 const Signup: React.FC<SignupProps> = ({ setUser }) => {
   const navigate = useNavigate();
-  const [role, setRole] = useState<'user' | 'seller'>('user');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    password: '',
+    confirmPassword: '',
     phone: '',
     pincode: '',
-    location: '',
-    bankName: '',
-    accountNumber: '',
-    ifscCode: '',
-    accountHolder: ''
+    location: ''
   });
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const bankDetails: BankDetails | undefined = role === 'seller' ? {
-      bankName: formData.bankName,
-      accountNumber: formData.accountNumber,
-      ifscCode: formData.ifscCode,
-      accountHolder: formData.accountHolder || `${formData.firstName} ${formData.lastName}`
-    } : undefined;
+    setError('');
 
-    const mockUser: User = {
-      id: 'new-' + Date.now(),
-      email: formData.email,
-      name: `${formData.firstName} ${formData.lastName}`,
-      role,
-      location: formData.location || 'Delhi',
-      pincode: formData.pincode,
-      phone: formData.phone,
-      bankDetails,
-      orders: []
-    };
+    if (!formData.password || formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
+    }
 
-    localStorage.setItem('stumarto_user', JSON.stringify(mockUser));
-    setUser(mockUser);
-    navigate(role === 'seller' ? '/seller-dashboard' : '/');
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          password: formData.password,
+          role: 'user',
+          location: formData.location || 'Delhi',
+          phone: formData.phone,
+          pincode: formData.pincode
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Signup failed');
+      }
+
+      localStorage.setItem('stumarto_token', data.data.token);
+      localStorage.setItem('stumarto_user', JSON.stringify(data.data.user));
+      setUser(data.data.user);
+      setSuccess(true);
+
+      setTimeout(() => navigate('/'), 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,112 +79,153 @@ const Signup: React.FC<SignupProps> = ({ setUser }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full bg-white p-12 rounded-[3rem] shadow-2xl border text-center">
+          <div className="w-20 h-20 bg-green-50 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">✓</div>
+          <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tighter uppercase">Welcome!</h2>
+          <p className="text-gray-500 mb-8">Your account has been created successfully. Redirecting to home...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen py-20 bg-gray-50/30 flex items-center justify-center px-4">
+    <div className="min-h-screen py-20 bg-gradient-to-b from-gray-50 to-white flex items-center justify-center px-4">
       <div className="max-w-2xl w-full bg-white p-12 rounded-[3rem] shadow-2xl border border-gray-100">
-         <div className="text-center mb-12">
-            <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-2">Join the Hub</h2>
-            <p className="text-gray-500 font-medium">Create your profile and start trading essentials.</p>
-         </div>
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-2">Create Your Account</h2>
+          <p className="text-gray-500 font-medium">Join Stumarto and start buying & selling school essentials</p>
+        </div>
 
-         <div className="flex gap-4 mb-12 bg-gray-50 p-2 rounded-[2.5rem] border border-gray-100">
-            <button 
-              type="button"
-              onClick={() => setRole('user')}
-              className={`flex-1 p-6 rounded-[2rem] transition-all duration-300 flex flex-col items-center gap-2 ${role === 'user' ? 'bg-white shadow-xl text-green-600 scale-105' : 'text-gray-400 hover:text-slate-800'}`}
-            >
-               <span className="text-3xl">🎒</span>
-               <span className="font-black text-[10px] uppercase tracking-widest">Parent / Student</span>
-            </button>
-            <button 
-              type="button"
-              onClick={() => setRole('seller')}
-              className={`flex-1 p-6 rounded-[2rem] transition-all duration-300 flex flex-col items-center gap-2 ${role === 'seller' ? 'bg-white shadow-xl text-green-600 scale-105' : 'text-gray-400 hover:text-slate-800'}`}
-            >
-               <span className="text-3xl">🏢</span>
-               <span className="font-black text-[10px] uppercase tracking-widest">Business Seller</span>
-            </button>
-         </div>
+        <form onSubmit={handleSignup} className="space-y-8">
+          {error && (
+            <div className="bg-red-50 border-2 border-red-200 rounded-2xl p-4 text-red-700 text-sm font-bold">
+              {error}
+            </div>
+          )}
 
-         <form onSubmit={handleSignup} className="space-y-8">
-            <div className="space-y-6">
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] px-2">Personal Identity</h3>
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">First Name</label>
-                  <input name="firstName" value={formData.firstName} onChange={handleInputChange} required className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Last Name</label>
-                  <input name="lastName" value={formData.lastName} onChange={handleInputChange} required className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" />
-                </div>
+          <div>
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em] px-2 mb-6">Personal Identity</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">First Name</label>
+                <input 
+                  name="firstName" 
+                  value={formData.firstName} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="John"
+                />
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Email Address</label>
-                  <input name="email" value={formData.email} onChange={handleInputChange} required type="email" className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Mobile Number</label>
-                  <input name="phone" value={formData.phone} onChange={handleInputChange} required type="tel" className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" placeholder="+91 XXX-XXX-XXXX" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">City</label>
-                  <input name="location" value={formData.location} onChange={handleInputChange} required className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Area Pincode</label>
-                  <input name="pincode" value={formData.pincode} onChange={handleInputChange} required maxLength={6} className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" />
-                </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Last Name</label>
+                <input 
+                  name="lastName" 
+                  value={formData.lastName} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="Doe"
+                />
               </div>
             </div>
 
-            {role === 'seller' && (
-              <div className="space-y-6 pt-8 border-t border-gray-50 animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex items-center justify-between px-2">
-                  <h3 className="text-xs font-black text-green-600 uppercase tracking-[0.3em]">Payout Credentials</h3>
-                  <div className="flex items-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    <svg className="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
-                    Bank Encrypted
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Bank Name</label>
-                    <input name="bankName" value={formData.bankName} onChange={handleInputChange} required className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" placeholder="e.g. HDFC Bank" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Account Holder Name</label>
-                    <input name="accountHolder" value={formData.accountHolder} onChange={handleInputChange} required className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">Account Number</label>
-                    <input name="accountNumber" value={formData.accountNumber} onChange={handleInputChange} required type="password" title="Encrypted field" className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-2">IFSC Code</label>
-                    <input name="ifscCode" value={formData.ifscCode} onChange={handleInputChange} required className="w-full border-2 border-gray-50 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" placeholder="e.g. HDFC0001234" />
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Email Address</label>
+                <input 
+                  name="email" 
+                  value={formData.email} 
+                  onChange={handleInputChange} 
+                  required 
+                  type="email" 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="you@example.com"
+                />
               </div>
-            )}
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Mobile Number</label>
+                <input 
+                  name="phone" 
+                  value={formData.phone} 
+                  onChange={handleInputChange} 
+                  required 
+                  type="tel" 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="+91 98XXXXXXXX"
+                />
+              </div>
+            </div>
 
-            <button className="w-full py-6 bg-green-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-slate-900 shadow-2xl shadow-green-200 transition-all transform active:scale-95 mt-4">
-               Complete {role === 'seller' ? 'Seller' : 'Buyer'} Registration
-            </button>
-         </form>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">City</label>
+                <input 
+                  name="location" 
+                  value={formData.location} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="New Delhi"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Area Pincode</label>
+                <input 
+                  name="pincode" 
+                  value={formData.pincode} 
+                  onChange={handleInputChange} 
+                  required 
+                  maxLength={6} 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="110001"
+                />
+              </div>
+            </div>
 
-         <p className="mt-12 text-center text-xs font-black uppercase tracking-widest text-gray-400">
-           Already a member? <Link to="/login" className="text-green-600 hover:underline">Sign In Instead</Link>
-         </p>
+            <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-100">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Password</label>
+                <input 
+                  name="password" 
+                  value={formData.password} 
+                  onChange={handleInputChange} 
+                  required 
+                  type="password" 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="Min 6 characters"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-2">Confirm Password</label>
+                <input 
+                  name="confirmPassword" 
+                  value={formData.confirmPassword} 
+                  onChange={handleInputChange} 
+                  required 
+                  type="password" 
+                  className="w-full border-2 border-gray-100 rounded-2xl p-4 bg-gray-50 focus:bg-white focus:border-green-600 outline-none transition" 
+                  placeholder="Re-enter password"
+                />
+              </div>
+            </div>
+          </div>
+
+          <button 
+            disabled={loading} 
+            className="w-full py-5 bg-green-600 text-white rounded-[2rem] font-black text-sm uppercase tracking-widest hover:bg-green-700 shadow-2xl shadow-green-200 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Creating Account...' : 'Complete Registration'}
+          </button>
+        </form>
+
+        <p className="mt-10 text-center text-xs font-black uppercase tracking-widest text-gray-400">
+          Already have an account? <Link to="/login" className="text-green-600 hover:underline font-black">Sign In</Link>
+        </p>
       </div>
     </div>
   );

@@ -108,7 +108,7 @@ const login = async (req, res) => {
     try {
       user = await User.findOne({ email }).select('+password');
     } catch (dbErr) {
-      console.warn('Database unavailable, using mock mode for login');
+      console.warn('Database unavailable, using mock mode for login:', dbErr.message);
       user = null;
     }
 
@@ -117,6 +117,7 @@ const login = async (req, res) => {
       const mockUser = MOCK_USERS[email.toLowerCase()];
       if (mockUser && mockUser.password === password) {
         const token = generateToken(mockUser._id);
+        console.log(`✅ Mock login successful for: ${email}`);
         return res.status(200).json({
           success: true,
           message: 'Login successful (mock mode)',
@@ -132,6 +133,7 @@ const login = async (req, res) => {
           }
         });
       }
+      console.warn(`❌ Login failed: Invalid credentials for ${email}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -142,6 +144,7 @@ const login = async (req, res) => {
     const isPasswordValid = await user.comparePassword(password);
     
     if (!isPasswordValid) {
+      console.warn(`❌ Login failed: Invalid password for ${email}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -161,6 +164,7 @@ const login = async (req, res) => {
       createdAt: user.createdAt
     };
 
+    console.log(`✅ Database login successful for: ${email} (${user.role})`);
     res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -170,11 +174,11 @@ const login = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Error logging in',
-      error: error.message
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
   }
 };

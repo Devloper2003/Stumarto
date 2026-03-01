@@ -14,29 +14,54 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
   const [password, setPassword] = useState('');
   const [isResetMode, setIsResetMode] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setErrorMessage('');
+    
     try {
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      console.log('🔐 Attempting login with email:', email);
+      console.log('📍 API Base URL:', API_BASE);
+      
+      const loginUrl = `${API_BASE}/auth/login`;
+      console.log('🌐 Login endpoint:', loginUrl);
+      
+      const res = await fetch(loginUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+      
+      console.log('📨 Response status:', res.status);
+      
       const data = await res.json();
+      console.log('📦 Response data:', data);
+      
       if (!res.ok) {
-        alert(data.message || 'Login failed');
+        const errorMsg = data.message || 'Login failed';
+        setErrorMessage(errorMsg);
+        console.error('❌ Login failed:', errorMsg);
+        alert(errorMsg);
         return;
       }
+      
       const { user, token } = data.data;
       // persist token and user
       localStorage.setItem('stumarto_token', token);
       localStorage.setItem('stumarto_user', JSON.stringify(user));
       setUser(user);
+      console.log('✅ Login successful, redirecting...');
       navigate(user.role === 'seller' ? '/seller-dashboard' : '/');
     } catch (err) {
-      console.error('Login error:', err);
-      alert('Unable to login. Please try again later.');
+      console.error('❌ Login error:', err);
+      const errorMsg = err instanceof Error ? err.message : 'Unable to connect to server';
+      setErrorMessage(errorMsg);
+      alert(errorMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -84,6 +109,11 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
 
          {!isResetMode ? (
            <form onSubmit={handleLogin} className="space-y-4">
+              {errorMessage && (
+                <div className="bg-red-50 border-2 border-red-200 rounded-xl p-3 text-red-700 text-sm font-semibold">
+                  ⚠️ {errorMessage}
+                </div>
+              )}
               <div>
                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email Address</label>
                  <input 
@@ -91,7 +121,8 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
                    type="email" 
                    value={email}
                    onChange={e => setEmail(e.target.value)}
-                   className="w-full border-2 border-gray-100 rounded-xl p-3 bg-gray-50 outline-none focus:bg-white focus:border-[#16a34a] transition"
+                   disabled={isLoading}
+                   className="w-full border-2 border-gray-100 rounded-xl p-3 bg-gray-50 outline-none focus:bg-white focus:border-[#16a34a] transition disabled:opacity-50"
                    placeholder="parent@school.com"
                  />
               </div>
@@ -101,7 +132,8 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
                    <button 
                     type="button"
                     onClick={() => setIsResetMode(true)}
-                    className="text-[10px] font-black text-green-600 uppercase hover:underline"
+                    disabled={isLoading}
+                    className="text-[10px] font-black text-green-600 uppercase hover:underline disabled:opacity-50"
                    >
                      Forgot?
                    </button>
@@ -111,12 +143,16 @@ const Login: React.FC<LoginProps> = ({ setUser }) => {
                   type="password" 
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full border-2 border-gray-100 rounded-xl p-3 bg-gray-50 outline-none focus:bg-white focus:border-[#16a34a] transition"
+                  disabled={isLoading}
+                  className="w-full border-2 border-gray-100 rounded-xl p-3 bg-gray-50 outline-none focus:bg-white focus:border-[#16a34a] transition disabled:opacity-50"
                   placeholder="••••••••"
                 />
               </div>
-                <button className="w-full py-4 bg-green-600 text-white rounded-2xl font-black text-sm uppercase hover:bg-green-700 transition shadow-lg shadow-green-200 mt-4">
-                 Sign In
+                <button 
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-4 bg-green-600 text-white rounded-2xl font-black text-sm uppercase hover:bg-green-700 transition shadow-lg shadow-green-200 mt-4 disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
            </form>
          ) : (

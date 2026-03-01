@@ -7,10 +7,25 @@ const cors = require('cors');
 
 const app = express();
 
+// Enhanced CORS configuration for production
+const corsOptions = {
+  origin: '*', // Allow all origins for now, can be restricted in production
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Request logging middleware (helps with debugging)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
 
 // Serve frontend static assets when present (production / hosting)
 const clientDist = path.join(__dirname, '..', 'dist');
