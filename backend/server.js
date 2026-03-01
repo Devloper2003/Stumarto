@@ -89,12 +89,25 @@ const connectDB = async () => {
 // Connect to MongoDB
 connectDB();
 
+// Initialize Supabase
+const supabaseUrl = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY || process.env.EXPO_PUBLIC_SUPABASE_KEY;
+
+if (supabaseUrl && supabaseKey) {
+  console.log('✅ Supabase Configured');
+  const safeUrl = supabaseUrl.replace(/(.{10})[^/]*/g, '$1****');
+  console.log(`📍 Supabase Project: ${safeUrl}`);
+} else {
+  console.warn('⚠️  Supabase not configured. Running with MongoDB/Mock mode only.');
+}
+
 // Routes
 app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'School Marketplace API is running!',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    supabase: process.env.SUPABASE_URL ? '✅ Connected' : '⚠️ Not configured'
   });
 });
 
