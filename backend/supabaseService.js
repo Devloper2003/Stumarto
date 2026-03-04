@@ -19,6 +19,22 @@ const supabaseService = {
     }
   },
 
+  async getUserById(userId) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
+    } catch (error) {
+      console.error('Supabase getUserById error:', error);
+      return null;
+    }
+  },
+
   async createUser(userData) {
     try {
       const { data, error } = await supabase

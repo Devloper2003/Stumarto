@@ -107,3 +107,32 @@ Make sure MongoDB is running on your system:
 - Add models in `models/` folder
 - Add middleware in `middleware/` folder
 - Add controllers in `controllers/` folder
+
+## Supabase & Deployment
+
+1. **Initialize Supabase**
+   - Run the SQL in `init_supabase.sql` (or copy its contents into Supabase SQL editor) to create the `users`, `products`, `carts`, and `orders` tables.
+   - Use the web dashboard to add additional columns or seed data if needed.
+
+2. **Environment variables** (also set on Render/Vercel):
+   ```text
+   SUPABASE_URL=<your project url>
+   SUPABASE_KEY=<service_role key>
+   JWT_SECRET=<your jwt secret>
+   ADMIN_EMAIL=admin@stumarto.com
+   ADMIN_PASSWORD=admin123
+   # optional: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, etc.
+   ```
+
+3. **Deploy to Render**
+   - Create a Web Service, set root directory to `backend`.
+   - Build: `npm install`, Start: `npm start`.
+   - Add the environment variables from above.
+   - After deployment, the logs will show `Server is running on port` and indicate Supabase is configured.
+
+4. **Link frontend**
+   - Set `REACT_APP_API_BASE` (or equivalent) in the Vercel project to the Render service URL.
+   - Update API calls in the frontend to use this base URL.
+   - Redeploy frontend.
+
+Refer to `backend/init_supabase.sql` for the full schema. The backend automatically falls back to MongoDB or mock data if Supabase is missing.

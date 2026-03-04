@@ -1,0 +1,26 @@
+# Render service configuration for automating deployment
+# https://render.com/docs/deploy-compare#service-yaml
+
+services:
+  - type: web
+    name: stumarto-backend
+    env: node
+    region: oregon  # choose your preferred region
+    plan: free
+    branch: main
+    root: backend
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    autoDeploy: true
+    envVars:
+      - key: SUPABASE_URL
+        fromSecret: SUPABASE_URL
+      - key: SUPABASE_KEY
+        fromSecret: SUPABASE_KEY
+      - key: JWT_SECRET
+        fromSecret: JWT_SECRET
+      - key: ADMIN_EMAIL
+        fromSecret: ADMIN_EMAIL
+      - key: ADMIN_PASSWORD
+        fromSecret: ADMIN_PASSWORD
+      # add other env vars as needed
