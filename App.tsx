@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import API_BASE from './services/api';
 import { HashRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Product, User, CartItem, ProductType, Order } from './types';
-import { DUMMY_PRODUCTS } from './mockData';
 import { useServiceWorker } from './src/hooks/useServiceWorker';
 import DeviceCompatibilityInfo from './src/components/DeviceCompatibilityInfo';
 import Home from './pages/Home';
@@ -21,12 +20,37 @@ import ReviewsPage from './pages/Reviews';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [products, setProducts] = useState<Product[]>(DUMMY_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [locationFilter, setLocationFilter] = useState<string>('All Locations');
   const [mobileOpen, setMobileOpen] = useState<boolean>(false);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   useServiceWorker();
+
+  // Fetch real products from backend API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        const response = await fetch(`${API_BASE}/products?page=1&limit=100`);
+        const data = await response.json();
+        if (data.success && data.data && data.data.products) {
+          setProducts(data.data.products);
+        }
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+        setProducts([]);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProducts();
+    // Refresh products every 30 seconds
+    const interval = setInterval(fetchProducts, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('stumarto_token');
