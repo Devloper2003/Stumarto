@@ -125,6 +125,7 @@ backend/
 |--------|----------|-------------|---------------|
 | POST | `/signup` | Register new user/seller | No |
 | POST | `/login` | Login user/seller | No |
+| PATCH | `/auth/upgrade` | Upgrade current account to seller | Yes (authenticated user) |
 | GET | `/profile` | Get current user profile | Yes |
 | PUT | `/profile` | Update user profile | Yes |
 

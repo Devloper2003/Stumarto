@@ -6,7 +6,8 @@ const {
   getMe,
   forgotPassword,
   resetPassword,
-  changePassword
+  changePassword,
+  upgradeToSeller
 } = require('../controllers/auth.controller');
 const { protect } = require('../middleware/auth.middleware');
 
@@ -19,5 +20,6 @@ router.post('/reset-password', resetPassword);
 // Private routes (require authentication)
 router.get('/me', protect, getMe);
 router.post('/change-password', protect, changePassword);
+router.patch('/upgrade', protect, upgradeToSeller);
 
 module.exports = router;

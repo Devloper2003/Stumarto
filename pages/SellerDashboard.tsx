@@ -1,17 +1,58 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product, ProductType, Category, Condition, User } from '../types';
 import { getSmartCategory } from '../services/geminiService';
+import { productAPI, authAPI } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 interface SellerDashboardProps {
   user: User | null;
   products: Product[];
   onAddProduct: (p: Product) => void;
+  updateUserInfo: (u: User) => void;
 }
 
 const SellerDashboard: React.FC<SellerDashboardProps> = ({ user, products, onAddProduct }) => {
   const [isListing, setIsListing] = useState(false);
   const [isLoadingCat, setIsLoadingCat] = useState(false);
+  const [sellerProducts, setSellerProducts] = useState<Product[]>([]);
+  const navigate = useNavigate();
+
+  // fetch seller's own inventory if we have a seller user
+  useEffect(() => {
+    const load = async () => {
+      if (user?.role === 'seller') {
+        try {
+          const res = await productAPI.getMyProducts();
+          if (res.success && res.data) {
+            // transform backend structure into front-end Product type
+            const arr = res.data.products.map(p => ({
+              id: p._id || p.id,
+              name: p.title || p.name,
+              description: p.description,
+              price: p.price,
+              category: p.category as Category,
+              condition: p.condition as Condition,
+              productType: p.productType as ProductType,
+              imageUrl: p.images?.[0] || '',
+              sellerId: typeof p.sellerId === 'string' ? p.sellerId : (p.sellerId as any)._id,
+              sellerName: typeof p.sellerId === 'string' ? '' : (p.sellerId as any).name,
+              location: p.location,
+              pincode: p.pincode || '',
+              approved: p.approved,
+              createdAt: p.createdAt,
+              reviews: p.reviews || []
+            } as Product));
+            setSellerProducts(arr);
+          }
+        } catch (err) {
+          console.error('Failed to load seller products', err);
+        }
+      }
+    };
+    load();
+  }, [user]);
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -24,31 +65,53 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user, products, onAdd
     pincode: user?.pincode || ''
   });
 
-  const myProducts = products.filter(p => p.sellerId === user?.id);
+  // if user is seller fetch their products from backend, otherwise fall back to props
+  const myProducts = user?.role === 'seller' ? sellerProducts : products.filter(p => p.sellerId === user?.id);
   const totalValue = myProducts.reduce((acc, p) => acc + p.price, 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newProduct: Product = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: formData.name,
+    const payload = {
+      title: formData.name,
       description: formData.description,
       price: Number(formData.price),
       category: formData.category,
       condition: formData.condition,
       productType: formData.productType,
-      imageUrl: formData.imageUrl || `https://picsum.photos/seed/${Math.random()}/400/400`,
-      sellerId: user?.id || 'temp',
-      sellerName: user?.name || 'Guest Seller',
+      images: formData.imageUrl ? [formData.imageUrl] : [],
       location: formData.location,
-      pincode: formData.pincode,
-      approved: false,
-      createdAt: new Date().toISOString(),
-      reviews: []
+      stock: 1
     };
-    onAddProduct(newProduct);
-    setIsListing(false);
-    alert("Item listed! It will go live after a quick admin review.");
+
+    try {
+      const res = await productAPI.createProduct(payload as any);
+      if (res.success && res.data?.product) {
+        const prod = {
+          id: res.data.product._id || res.data.product.id,
+          name: res.data.product.title || res.data.product.name,
+          description: res.data.product.description,
+          price: res.data.product.price,
+          category: res.data.product.category as Category,
+          condition: res.data.product.condition as Condition,
+          productType: res.data.product.productType as ProductType,
+          imageUrl: res.data.product.images?.[0] || `https://picsum.photos/seed/${Math.random()}/400/400`,
+          sellerId: res.data.product.sellerId as string,
+          sellerName: (res.data.product.sellerId as any).name || user?.name || 'Seller',
+          location: res.data.product.location || formData.location,
+          pincode: formData.pincode,
+          approved: res.data.product.approved,
+          createdAt: res.data.product.createdAt || new Date().toISOString(),
+          reviews: []
+        } as Product;
+        setSellerProducts(prev => [prod, ...prev]);
+        onAddProduct(prod);
+        setIsListing(false);
+        alert("Item listed! It will go live after a quick admin review.");
+      }
+    } catch (err) {
+      console.error('Failed to create product', err);
+      alert('Unable to list item');
+    }
   };
 
   const autoCategory = async () => {
@@ -59,13 +122,27 @@ const SellerDashboard: React.FC<SellerDashboardProps> = ({ user, products, onAdd
     setIsLoadingCat(false);
   };
 
+  const handleBecomeSeller = async () => {
+    try {
+      const res = await authAPI.upgradeToSeller();
+      if (res.success && res.data?.user) {
+        updateUserInfo(res.data.user);
+        alert('🎉 You are now a seller!');
+        navigate('/seller-dashboard');
+      }
+    } catch (err) {
+      console.error('Upgrade error', err);
+      alert('Could not upgrade account');
+    }
+  };
+
   if (!user || user.role !== 'seller') {
     return (
       <div className="max-w-4xl mx-auto py-32 px-4 text-center">
         <div className="w-20 h-20 bg-green-50 text-green-600 rounded-3xl flex items-center justify-center text-4xl mx-auto mb-6">🏐</div>
         <h2 className="text-4xl font-black text-slate-800 mb-4">Start Selling on Stumarto</h2>
         <p className="text-gray-500 mb-10 max-w-md mx-auto">Turn your outgrown uniforms and used textbooks into cash while helping another student!</p>
-        <button className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase shadow-2xl hover:bg-green-600 transition">Become a Seller</button>
+        <button onClick={handleBecomeSeller} className="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase shadow-2xl hover:bg-green-600 transition">Become a Seller</button>
       </div>
     );
   }

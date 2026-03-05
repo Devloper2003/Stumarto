@@ -570,11 +570,53 @@ const changePassword = async (req, res) => {
   }
 };
 
+// @desc    Upgrade current user to seller
+// @route   PATCH /api/auth/upgrade
+// @access  Private
+const upgradeToSeller = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (user.role === 'seller') {
+      return res.status(400).json({ success: false, message: 'You are already a seller' });
+    }
+
+    user.role = 'seller';
+    await user.save();
+
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      location: user.location,
+      createdAt: user.createdAt
+    };
+
+    res.status(200).json({
+      success: true,
+      message: 'Account upgraded to seller',
+      data: { user: userResponse }
+    });
+  } catch (error) {
+    console.error('Upgrade to seller error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error upgrading account',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   getMe,
   forgotPassword,
   resetPassword,
-  changePassword
+  changePassword,
+  upgradeToSeller
 };

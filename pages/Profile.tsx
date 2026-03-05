@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { User, Product, BankDetails } from '../types';
 import { useNavigate, Link } from 'react-router-dom';
+import { authAPI } from '../services/api';
 
 interface ProfileProps {
   user: User | null;
@@ -14,6 +15,19 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, products, onLogout })
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingBank, setIsEditingBank] = useState(false);
+
+  const handleUpgrade = async () => {
+    try {
+      const res = await authAPI.upgradeToSeller();
+      if (res.success && res.data?.user) {
+        onUpdate(res.data.user);
+        alert('You are now a seller!');
+      }
+    } catch (err) {
+      console.error('Upgrade failed', err);
+      alert('Could not upgrade to seller');
+    }
+  };
   
   const [formData, setFormData] = useState(user || {
     id: '', name: '', email: '', role: 'user', location: '', pincode: '', phone: '', bio: '', orders: []
@@ -94,6 +108,9 @@ const Profile: React.FC<ProfileProps> = ({ user, onUpdate, products, onLogout })
                           )}
                        </div>
                        <button onClick={() => setIsEditing(true)} className="w-full py-5 bg-[#0f172a] text-white rounded-[2rem] font-black text-[10px] uppercase hover:bg-[#16a34a] transition tracking-widest shadow-xl">Update Identity</button>
+                       {user.role === 'user' && (
+                         <button onClick={handleUpgrade} className="w-full mt-3 py-4 bg-green-600 text-white rounded-[2rem] font-black text-[10px] uppercase hover:bg-green-700 transition tracking-widest shadow-xl">Become Seller</button>
+                       )}
                       <button onClick={() => { localStorage.removeItem('stumarto_token'); localStorage.removeItem('stumarto_user'); if (onLogout) onLogout(); navigate('/'); }} className="w-full mt-3 py-3 bg-red-50 text-red-600 rounded-[2rem] font-black text-[10px] uppercase hover:bg-red-100 transition tracking-widest">Logout</button>
                                  {user.role === 'admin' && (
                                     <Link to="/admin" className="block w-full mt-3 py-3 text-center bg-green-600 text-white rounded-[2rem] font-black text-[10px] uppercase hover:bg-green-700 transition tracking-widest">Go to Admin Dashboard</Link>

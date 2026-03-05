@@ -199,7 +199,7 @@ const App: React.FC = () => {
             <Route path="/product/:id" element={<ProductDetail products={products} addToCart={addToCart} currentUser={user} setProducts={setProducts} />} />
             <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} />} />
             <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} user={user} updateUserInfo={updateUserInfo} />} />
-            <Route path="/seller-dashboard" element={<SellerDashboard user={user} products={products} onAddProduct={handleAddProduct} />} />
+            <Route path="/seller-dashboard" element={<SellerDashboard user={user} products={products} onAddProduct={handleAddProduct} updateUserInfo={updateUserInfo} />} />
             <Route path="/admin" element={<AdminPanel products={products} onApprove={handleApproveProduct} onDelete={handleDeleteProduct} onUpdate={handleUpdateProduct} />} />
             <Route path="/login" element={<Login setUser={setUser} />} />
             <Route path="/signup" element={<Signup setUser={setUser} />} />

@@ -98,6 +98,11 @@ export const authAPI = {
   getMe: async (): Promise<ApiResponse<{ user: User }>> => {
     return apiCall<{ user: User }>('/auth/me');
   },
+  upgradeToSeller: async (): Promise<ApiResponse<{ user: User }>> => {
+    return apiCall<{ user: User }>('/auth/upgrade', {
+      method: 'PATCH'
+    });
+  }
 };
 
 // ==================== PRODUCT APIs ====================
