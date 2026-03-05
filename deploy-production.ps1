@@ -57,11 +57,11 @@ $renderBody = @{
     buildCommand = "npm install"
     startCommand = "npm start"
     envVars = @(
-        @{ key = "SUPABASE_URL"; value = $supabaseUrl }
-        @{ key = "SUPABASE_KEY"; value = $supabaseKey }
-        @{ key = "JWT_SECRET"; value = $jwtSecret }
-        @{ key = "ADMIN_EMAIL"; value = "admin@stumarto.com" }
-        @{ key = "ADMIN_PASSWORD"; value = "admin@stumarto2024" }
+        @{ key = "SUPABASE_URL"; value = $supabaseUrl },
+        @{ key = "SUPABASE_KEY"; value = $supabaseKey },
+        @{ key = "JWT_SECRET"; value = $jwtSecret },
+        @{ key = "ADMIN_EMAIL"; value = "admin@stumarto.com" },
+        @{ key = "ADMIN_PASSWORD"; value = "admin@stumarto2024" },
         @{ key = "NODE_ENV"; value = "production" }
     )
     autoDeploy = $true
@@ -110,8 +110,8 @@ try {
         target = @("production", "preview")
     } | ConvertTo-Json
     
-    $envResponse = Invoke-RestMethod -Uri "https://api.vercel.com/v10/projects/$projectId/env" `
-        -Headers $vercelHeaders -Method POST -Body $envBody
+    Invoke-RestMethod -Uri "https://api.vercel.com/v10/projects/$projectId/env" `
+        -Headers $vercelHeaders -Method POST -Body $envBody | Out-Null
     
     Write-Host "✅ Vercel environment updated!" -ForegroundColor Green
     Write-Host "   VITE_API_BASE_URL=$backendUrl" -ForegroundColor Cyan
@@ -125,8 +125,6 @@ Write-Host "`n🚀 Step 6: Redeploying frontend to Vercel" -ForegroundColor Yell
 
 try {
     Write-Host "  → Triggering Vercel redeploy..." -ForegroundColor Cyan
-    
-    $redeployBody = @{ gitMetadata = @{} } | ConvertTo-Json
     
     # Try to get latest deployment and redeploy
     $deployments = Invoke-RestMethod -Uri "https://api.vercel.com/v6/deployments?projectId=$projectId&limit=1" `
