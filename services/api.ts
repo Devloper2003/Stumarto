@@ -1,7 +1,5 @@
 // API Base URL
-const API_BASE =
-  import.meta.env.VITE_API_BASE_URL || "https://stumarto.onrender.com";
-
+const API_BASE = "https://stumarto.onrender.com/api";
 export default API_BASE;
 
 // Get token from localStorage
