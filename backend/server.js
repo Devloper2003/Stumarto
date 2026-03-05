@@ -4,30 +4,35 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const { seedAdmin } = require('./utils/seedAdmin');
 
 const app = express();
 
-// Enhanced CORS configuration for production
+// CORS configuration for frontend domains
 const corsOptions = {
-  origin: '*', // Allow all origins for now, can be restricted in production
+  origin: [
+    "https://stumarto.in",
+    "https://www.stumarto.in",
+    "https://stumarto.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5173"
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  optionsSuccessStatus: 200
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 };
 
-// Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Request logging middleware (helps with debugging)
+// Request logging middleware
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
 });
 
-// Serve frontend static assets when present (production / hosting)
+// Serve frontend static assets when present
 const clientDist = path.join(__dirname, '..', 'dist');
 const fs = require('fs');
 if (fs.existsSync(clientDist)) {
@@ -54,51 +59,45 @@ const connectDB = async () => {
     DB_CONNECTED = true;
     console.log('✅ MongoDB connected successfully');
     console.log(`📍 Database: ${mongoose.connection.name}`);
-    // Seed admin user if configured
+    
+    // Seed admin user in MongoDB
     try {
       const { User } = require('./models');
-      const adminEmail = process.env.ADMIN_EMAIL;
-      const adminPassword = process.env.ADMIN_PASSWORD;
-      if (adminEmail && adminPassword) {
-        const existing = await User.findOne({ email: adminEmail.toLowerCase() });
-        if (!existing) {
-          await User.create({
-            name: 'Platform Admin',
-            email: adminEmail.toLowerCase(),
-            password: adminPassword,
-            role: 'admin',
-            location: 'Headquarters'
-          });
-          console.log(`🔐 Admin seeded: ${adminEmail}`);
-        } else {
-          console.log(`🔐 Admin exists: ${adminEmail}`);
-        }
-      }
+      await seedAdmin(User, null);
     } catch (seedErr) {
-      console.error('Admin seeding error:', seedErr && seedErr.message ? seedErr.message : seedErr);
+      console.error('Admin seeding error:', seedErr.message);
     }
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
     DB_CONNECTED = false;
-    console.warn('⚠️  Continuing without MongoDB connection. Server will run in degraded/mock mode.');
-    console.info('💡 Mock in-memory database is available at ./mockDB.js for testing.');
-    // Do not exit process; allow server to start for frontend/demo work
+    console.warn('⚠️  Continuing without MongoDB. Running in Supabase/mock mode.');
   }
 };
 
-// Connect to MongoDB
+// Connect MongoDB
 connectDB();
 
 // Initialize Supabase
 const supabaseUrl = process.env.SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY || process.env.EXPO_PUBLIC_SUPABASE_KEY;
 
+let supabaseService = null;
 if (supabaseUrl && supabaseKey) {
+  supabaseService = require('./supabaseService');
   console.log('✅ Supabase Configured');
   const safeUrl = supabaseUrl.replace(/(.{10})[^/]*/g, '$1****');
-  console.log(`📍 Supabase Project: ${safeUrl}`);
+  console.log(`📍 Supabase: ${safeUrl}`);
+  
+  // Seed admin user in Supabase
+  (async () => {
+    try {
+      await seedAdmin(null, supabaseService);
+    } catch (err) {
+      console.warn('Supabase admin seeding warning:', err.message);
+    }
+  })();
 } else {
-  console.warn('⚠️  Supabase not configured. Running with MongoDB/Mock mode only.');
+  console.warn('⚠️  Supabase not configured. Using MongoDB/Mock mode.');
 }
 
 // Routes
